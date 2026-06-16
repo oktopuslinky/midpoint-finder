@@ -1,9 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import type { PlaceResult } from '../types';
 
 interface PlaceDetailsModalProps {
-  /** The list item the user clicked — used for an instant header while details load. */
   place: PlaceResult;
   onClose: () => void;
 }
@@ -33,13 +32,92 @@ function Stars({ rating }: { rating: number }) {
   );
 }
 
+/** Tracks a downward touch drag on the card and calls onDismiss when threshold is met. */
+function useSwipeToDismiss(
+  cardRef: React.RefObject<HTMLDivElement | null>,
+  onDismiss: () => void,
+) {
+  const [dragY, setDragY] = useState(0);
+  const [isDismissing, setIsDismissing] = useState(false);
+  // Ref so the effect closure never goes stale when onDismiss identity changes.
+  const onDismissRef = useRef(onDismiss);
+  useEffect(() => {
+    onDismissRef.current = onDismiss;
+  });
+
+  useEffect(() => {
+    const card = cardRef.current;
+    if (!card) return;
+
+    const s = { startY: 0, startTime: 0, started: false, dragging: false, lastY: 0 };
+
+    const onTouchStart = (e: TouchEvent) => {
+      if (card.scrollTop > 4) return;
+      s.startY = e.touches[0].clientY;
+      s.startTime = Date.now();
+      s.started = true;
+      s.dragging = false;
+      s.lastY = 0;
+    };
+
+    const onTouchMove = (e: TouchEvent) => {
+      if (!s.started) return;
+      if (card.scrollTop > 4) { s.started = false; return; }
+      const delta = e.touches[0].clientY - s.startY;
+      if (delta > 0) {
+        s.dragging = true;
+        s.lastY = delta;
+        e.preventDefault();
+        setDragY(delta);
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (!s.dragging) return;
+      const elapsed = Date.now() - s.startTime;
+      const velocity = s.lastY / Math.max(elapsed, 1);
+      s.dragging = false;
+      s.started = false;
+      if (s.lastY > 80 || velocity > 0.5) {
+        setIsDismissing(true);
+        setTimeout(() => onDismissRef.current(), 220);
+      } else {
+        setDragY(0);
+      }
+    };
+
+    card.addEventListener('touchstart', onTouchStart, { passive: true });
+    card.addEventListener('touchmove', onTouchMove, { passive: false });
+    card.addEventListener('touchend', onTouchEnd);
+    return () => {
+      card.removeEventListener('touchstart', onTouchStart);
+      card.removeEventListener('touchmove', onTouchMove);
+      card.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [cardRef]);
+
+  const cardStyle: React.CSSProperties = isDismissing
+    ? { transform: 'translateY(120%)', transition: 'transform 0.22s cubic-bezier(0.4, 0, 1, 1)' }
+    : dragY > 0
+      ? { transform: `translateY(${dragY}px)`, transition: 'none' }
+      : {};
+
+  return { cardStyle };
+}
+
+const REVIEWS_INITIAL = 3;
+
 /**
  * A modal "detail card" for a single place: hero photos, key facts, opening
  * hours, an editorial blurb, recent reviews, and quick links out to Google /
- * Apple Maps and the venue website. Closes on backdrop click or Escape.
+ * Apple Maps and the venue website. Closes on backdrop click, Escape, or a
+ * downward swipe on mobile.
  */
 export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
   const { details, loading, error } = usePlaceDetails(place.id);
+  const [showAllReviews, setShowAllReviews] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { cardStyle } = useSwipeToDismiss(cardRef, onClose);
 
   // Close on Escape and lock background scroll while open.
   useEffect(() => {
@@ -69,6 +147,10 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
   const lat = details?.location.lat ?? place.location.lat;
   const lng = details?.location.lng ?? place.location.lng;
 
+  const allReviews = details?.reviews ?? [];
+  const visibleReviews = showAllReviews ? allReviews : allReviews.slice(0, REVIEWS_INITIAL);
+  const hiddenCount = allReviews.length - REVIEWS_INITIAL;
+
   return (
     <div
       className="modal-backdrop"
@@ -77,7 +159,14 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
       aria-label={place.name}
       onClick={onClose}
     >
-      <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        ref={cardRef}
+        className="modal-card"
+        style={cardStyle}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-drag-handle" aria-hidden />
+
         <button
           type="button"
           className="modal-close"
@@ -124,7 +213,6 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
             <p className="modal-address">{details?.address ?? place.address}</p>
           )}
 
-          {/* Quick actions */}
           <div className="modal-actions">
             <a
               className="modal-action modal-action--primary"
@@ -181,11 +269,11 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
             </section>
           )}
 
-          {details?.reviews && details.reviews.length > 0 && (
+          {allReviews.length > 0 && (
             <section className="modal-section">
               <h3>What people say</h3>
               <ul className="modal-reviews">
-                {details.reviews.slice(0, 5).map((r, i) => (
+                {visibleReviews.map((r, i) => (
                   <li key={i} className="modal-review">
                     <div className="modal-review-head">
                       {r.authorPhotoUrl ? (
@@ -216,6 +304,15 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
                   </li>
                 ))}
               </ul>
+              {!showAllReviews && hiddenCount > 0 && (
+                <button
+                  type="button"
+                  className="modal-show-more-reviews"
+                  onClick={() => setShowAllReviews(true)}
+                >
+                  Show {hiddenCount} more {hiddenCount === 1 ? 'review' : 'reviews'}
+                </button>
+              )}
             </section>
           )}
         </div>

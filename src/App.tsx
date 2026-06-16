@@ -264,6 +264,7 @@ function Finder() {
           places={places}
           selectedId={selectedId}
           onSelectPlace={setSelectedId}
+          onOpenDetails={handleOpenDetails}
         />
       </main>
 

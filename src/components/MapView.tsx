@@ -16,6 +16,7 @@ interface MapViewProps {
   places: PlaceResult[];
   selectedId: string | null;
   onSelectPlace: (id: string | null) => void;
+  onOpenDetails: (place: PlaceResult) => void;
 }
 
 const DEFAULT_CENTER: LatLng = { lat: 39.5, lng: -98.35 }; // continental US
@@ -50,6 +51,7 @@ export function MapView({
   places,
   selectedId,
   onSelectPlace,
+  onOpenDetails,
 }: MapViewProps) {
   const boundsPoints: LatLng[] = [
     locationA?.location,
@@ -121,16 +123,23 @@ export function MapView({
           onCloseClick={() => onSelectPlace(null)}
         >
           <div className="info-window">
-            <strong>{selected.name}</strong>
-            {selected.rating != null && (
-              <div className="info-rating">
-                ⭐ {selected.rating.toFixed(1)}
-                {selected.userRatingsTotal
-                  ? ` (${selected.userRatingsTotal})`
-                  : ''}
-              </div>
+            <div className="info-window-header">
+              <strong className="info-window-name">{selected.name}</strong>
+              <button
+                type="button"
+                className="info-window-info-btn"
+                aria-label={`View details for ${selected.name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpenDetails(selected);
+                }}
+              >
+                ℹ
+              </button>
+            </div>
+            {selected.address && (
+              <div className="info-window-address">{selected.address}</div>
             )}
-            {selected.address && <div>{selected.address}</div>}
           </div>
         </InfoWindow>
       )}

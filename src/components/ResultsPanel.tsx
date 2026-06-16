@@ -1,5 +1,6 @@
 import type { LatLng, PlaceResult } from '../types';
 import { distanceMeters, formatDistance } from '../lib/geo';
+import { Icon } from './Icon';
 
 interface ResultsPanelProps {
   places: PlaceResult[];
@@ -43,7 +44,9 @@ export function ResultsPanel({
   if (!ready) {
     return (
       <div className="results-empty">
-        <span className="results-empty-icon">📍</span>
+        <span className="results-empty-icon">
+          <Icon name="pin" />
+        </span>
         <p>Enter both locations to discover things to do in the middle.</p>
       </div>
     );
@@ -64,7 +67,9 @@ export function ResultsPanel({
   if (places.length === 0) {
     return (
       <div className="results-empty">
-        <span className="results-empty-icon">🤷</span>
+        <span className="results-empty-icon">
+          <Icon name="search" />
+        </span>
         <p>No spots found here. Try another category or widen the radius.</p>
       </div>
     );
@@ -98,14 +103,17 @@ export function ResultsPanel({
                   loading="lazy"
                 />
               ) : (
-                <div className="place-thumb place-thumb--empty">🏙️</div>
+                <div className="place-thumb place-thumb--empty">
+                  <Icon name="building" />
+                </div>
               )}
               <div className="place-info">
                 <div className="place-name">{place.name}</div>
                 <div className="place-meta">
                   {place.rating != null && (
                     <span className="place-rating">
-                      ⭐ {place.rating.toFixed(1)}
+                      <Icon name="star" filled size={13} />
+                      {place.rating.toFixed(1)}
                       {place.userRatingsTotal
                         ? ` · ${place.userRatingsTotal}`
                         : ''}
@@ -134,7 +142,8 @@ export function ResultsPanel({
                     className="place-directions"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    Directions ↗
+                    Directions
+                    <Icon name="directions" size={13} />
                   </a>
                 </div>
               </div>

@@ -1,9 +1,16 @@
-import { type ReactNode, useCallback, useMemo, useState } from 'react';
+import {
+  type CSSProperties,
+  type ReactNode,
+  useCallback,
+  useMemo,
+  useState,
+} from 'react';
 import { APIProvider } from '@vis.gl/react-google-maps';
 import { LocationInput } from './components/LocationInput';
 import { MapView } from './components/MapView';
 import { ResultsPanel } from './components/ResultsPanel';
 import { PlaceDetailsModal } from './components/PlaceDetailsModal';
+import { Icon, type IconName } from './components/Icon';
 import { useNearbyPlaces } from './hooks/useNearbyPlaces';
 import { CATEGORIES, geographicMidpoint } from './lib/geo';
 import type { PlaceResult, UserLocation } from './types';
@@ -81,7 +88,9 @@ function Finder() {
     <div className={`app app--${mobileView}`}>
       <aside className="sidebar">
         <header className="brand">
-          <span className="brand-mark">🧭</span>
+          <span className="brand-mark">
+            <Icon name="brand" size={24} />
+          </span>
           <div>
             <h1>Meet in the Middle</h1>
             <p>Find things to do between two locations.</p>
@@ -95,18 +104,23 @@ function Finder() {
             aria-expanded={panelOpen}
             onClick={() => setPanelOpen((v) => !v)}
           >
+            <span className="panel-toggle-icon">
+              <Icon name="radius" size={17} />
+            </span>
             <span className="panel-toggle-label">
               {panelOpen ? 'Search settings' : 'Edit search'}
             </span>
             {!panelOpen && ready && (
               <span className="panel-toggle-summary">
-                <span aria-hidden>{category.icon}</span> {category.label} ·{' '}
-                {radiusKm} km
+                <Icon name={category.id as IconName} size={14} />{' '}
+                {category.label} · {radiusKm} km
               </span>
             )}
-            <span className="chevron" aria-hidden>
-              {panelOpen ? '▾' : '▸'}
-            </span>
+            <Icon
+              name="chevronDown"
+              size={16}
+              className={panelOpen ? 'chevron' : 'chevron chevron--closed'}
+            />
           </button>
 
           {!panelOpen && ready && (
@@ -136,6 +150,7 @@ function Finder() {
               <CollapsibleSection
                 id="locations"
                 label="Locations"
+                icon="pin"
                 open={sectionOpen.locations}
                 onToggle={() => setSectionOpen((s) => ({ ...s, locations: !s.locations }))}
                 summary={
@@ -183,11 +198,13 @@ function Finder() {
               <CollapsibleSection
                 id="categories"
                 label="Category"
+                icon="grid"
                 open={sectionOpen.categories}
                 onToggle={() => setSectionOpen((s) => ({ ...s, categories: !s.categories }))}
                 summary={
                   <span className="summary-row-inline">
-                    <span aria-hidden>{category.icon}</span> {category.label}
+                    <Icon name={category.id as IconName} size={14} />{' '}
+                    {category.label}
                   </span>
                 }
               >
@@ -205,7 +222,8 @@ function Finder() {
                           setSelectedId(null);
                         }}
                       >
-                        <span aria-hidden>{c.icon}</span> {c.label}
+                        <Icon name={c.id as IconName} size={15} />
+                        <span>{c.label}</span>
                       </button>
                     ))}
                   </div>
@@ -216,6 +234,7 @@ function Finder() {
               <CollapsibleSection
                 id="radius"
                 label="Search radius"
+                icon="radius"
                 open={sectionOpen.radius}
                 onToggle={() => setSectionOpen((s) => ({ ...s, radius: !s.radius }))}
                 summary={
@@ -234,6 +253,11 @@ function Finder() {
                       value={radiusKm}
                       onChange={(e) => setRadiusKm(Number(e.target.value))}
                       aria-label="Search radius in kilometres"
+                      style={
+                        {
+                          '--pct': `${((radiusKm - 1) / 49) * 100}%`,
+                        } as CSSProperties
+                      }
                     />
                     <div className="radius-scale">
                       <span>1 km</span>
@@ -282,7 +306,8 @@ function Finder() {
           aria-pressed={mobileView === 'list'}
           onClick={() => setMobileView('list')}
         >
-          📋 List
+          <Icon name="list" size={20} />
+          <span>List</span>
           {ready && places.length > 0 && (
             <span className="mobile-count">{places.length}</span>
           )}
@@ -293,7 +318,8 @@ function Finder() {
           aria-pressed={mobileView === 'map'}
           onClick={() => setMobileView('map')}
         >
-          🗺️ Map
+          <Icon name="map" size={20} />
+          <span>Map</span>
         </button>
       </nav>
 
@@ -310,6 +336,8 @@ function Finder() {
 interface CollapsibleSectionProps {
   id: string;
   label: string;
+  /** Leading icon shown in the section header. */
+  icon: IconName;
   open: boolean;
   onToggle: () => void;
   /** Compact preview shown in the header while the section is collapsed. */
@@ -321,6 +349,7 @@ interface CollapsibleSectionProps {
 function CollapsibleSection({
   id,
   label,
+  icon,
   open,
   onToggle,
   summary,
@@ -335,11 +364,16 @@ function CollapsibleSection({
         aria-controls={`section-${id}`}
         onClick={onToggle}
       >
+        <span className="section-icon">
+          <Icon name={icon} size={17} />
+        </span>
         <span className="section-label">{label}</span>
         {!open && <span className="section-summary">{summary}</span>}
-        <span className="chevron" aria-hidden>
-          {open ? '▾' : '▸'}
-        </span>
+        <Icon
+          name="chevronDown"
+          size={16}
+          className={open ? 'chevron' : 'chevron chevron--closed'}
+        />
       </button>
       {open && (
         <div className="section-body" id={`section-${id}`}>
@@ -354,7 +388,7 @@ function MissingKey() {
   return (
     <div className="setup-screen">
       <div className="setup-card">
-        <h1>🔑 API key required</h1>
+        <h1>API key required</h1>
         <p>
           Create a <code>.env</code> file in the project root with your Google
           Maps key:

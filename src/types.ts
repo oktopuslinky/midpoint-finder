@@ -63,10 +63,9 @@ export interface PlaceDetails {
 
 /** A searchable category of activity, mapped to a Google Places `type`. */
 export interface Category {
+  /** Stable id; also the key into the icon registry (see {@link Icon}). */
   id: string;
   label: string;
-  /** Emoji icon for the chip / marker. */
-  icon: string;
   /** Google Places nearby-search `type`. */
   placeType: string;
 }

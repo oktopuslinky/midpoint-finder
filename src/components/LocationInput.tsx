@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useMapsLibrary } from '@vis.gl/react-google-maps';
 import type { UserLocation } from '../types';
+import { Icon } from './Icon';
 
 interface LocationInputProps {
   label: string;
@@ -113,7 +114,7 @@ export function LocationInput({
         {gettingLocation ? (
           <span className="location-clear-spinner" aria-hidden="true"></span>
         ) : value ? (
-          '✕'
+          <Icon name="close" size={16} />
         ) : null}
       </button>
       {!value && !gettingLocation && (
@@ -124,10 +125,7 @@ export function LocationInput({
           onClick={handleCurrentLocation}
           disabled={gettingLocation}
         >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <circle cx="12" cy="12" r="3" />
-            <path d="M12 2v2M12 20v2M2 12h2M20 12h2" />
-          </svg>
+          <Icon name="locate" size={18} />
           <span className="location-current-text">My Location</span>
         </button>
       )}

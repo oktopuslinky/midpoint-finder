@@ -220,6 +220,83 @@
   overflow: hidden;
 }
 
+/* ---------- Search action ----------
+   Nothing is fetched until the user commits the form with this button, so it
+   reads as the panel's primary call-to-action. */
+.panel-actions {
+  margin-top: 12px;
+}
+
+.search-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 16px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  background: var(--accent-grad);
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  box-shadow: 0 10px 26px -8px rgba(99, 102, 241, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  transition: transform 0.14s var(--ease-out), box-shadow 0.18s, filter 0.18s,
+    opacity 0.18s;
+}
+
+.search-btn svg {
+  width: 17px;
+  height: 17px;
+}
+
+.search-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px -8px rgba(99, 102, 241, 0.72),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.search-btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.99);
+}
+
+.search-btn:disabled {
+  background: var(--glass-2);
+  color: var(--text-faint);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-highlight);
+  cursor: not-allowed;
+}
+
+/* "Search again" with no pending edits — a calmer ghost treatment so it stops
+   shouting once the results already match the form. */
+.search-btn--ghost:not(:disabled) {
+  background: var(--glass-2);
+  color: var(--text);
+  border-color: var(--glass-border);
+  box-shadow: var(--glass-highlight);
+}
+
+.search-btn--ghost:not(:disabled):hover {
+  background: var(--glass-hover);
+  border-color: var(--border-strong);
+  box-shadow: var(--glass-highlight);
+  transform: none;
+}
+
+.search-btn--ghost svg {
+  color: var(--accent-a-bright);
+}
+
+.panel-actions-hint {
+  margin: 8px 2px 0;
+  text-align: center;
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
 /* ---------- Collapsible sections ---------- */
 .section {
   border-top: 1px solid var(--glass-border);
@@ -622,12 +699,47 @@
   font-variant-numeric: tabular-nums;
 }
 
-/* ---------- Mobile bottom nav (hidden on desktop) ---------- */
+/* ---------- Mobile bottom nav (hidden on desktop) ----------
+   A segmented "List / Map" switch: a recessed glass track with a single
+   accent thumb that slides under the active segment, rather than a static pill
+   stamped behind each button. */
 .mobile-nav {
   display: none;
 }
 
+.mobile-switch {
+  position: relative;
+  flex: 1;
+  display: flex;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid var(--glass-border);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.35),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+/* The sliding accent thumb — one element shared by both segments. */
+.mobile-switch-thumb {
+  position: absolute;
+  top: 4px;
+  bottom: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  border-radius: 999px;
+  background: var(--accent-grad);
+  box-shadow: 0 6px 16px -5px rgba(99, 102, 241, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.32);
+  transition: transform 0.42s var(--ease-spring);
+}
+
+.mobile-switch[data-active='map'] .mobile-switch-thumb {
+  transform: translateX(100%);
+}
+
 .mobile-tab {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   align-items: center;
@@ -636,35 +748,26 @@
   background: transparent;
   border: none;
   color: var(--text-dim);
-  padding: 0;
-  font-size: 13px;
+  padding: 9px 0;
+  font-size: 13.5px;
   font-weight: 600;
-  position: relative;
-  transition: color 0.18s;
+  letter-spacing: -0.01em;
+  transition: color 0.3s var(--ease-out);
 }
 
 .mobile-tab svg {
-  width: 20px;
-  height: 20px;
+  width: 19px;
+  height: 19px;
 }
 
 .mobile-tab--active {
-  color: var(--text);
+  color: #fff;
 }
 
-.mobile-tab--active::after {
-  content: '';
-  position: absolute;
-  top: 6px;
-  width: 46px;
-  height: 30px;
-  border-radius: 999px;
-  background: rgba(129, 140, 248, 0.16);
-  z-index: -1;
-}
-
+/* Frosted count chip that stays legible both on the accent thumb (list active)
+   and on the dark track (map active). */
 .mobile-count {
-  background: var(--accent-grad);
+  background: rgba(255, 255, 255, 0.22);
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -1558,7 +1661,7 @@
     top: 0;
     left: 0;
     right: 0;
-    bottom: calc(58px + env(safe-area-inset-bottom));
+    bottom: calc(64px + env(safe-area-inset-bottom));
   }
 
   .sidebar {
@@ -1566,12 +1669,25 @@
     top: 0;
     left: 0;
     right: 0;
-    bottom: calc(58px + env(safe-area-inset-bottom));
+    bottom: calc(64px + env(safe-area-inset-bottom));
     border-right: none;
     box-shadow: none;
     z-index: 2;
     /* More opaque over the live map so text stays legible against any tiles. */
     background: rgba(11, 14, 23, 0.82);
+    /* The whole column scrolls as one — brand, search settings, and results —
+       so a fully expanded search panel can always be scrolled to its end. */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  /* On mobile the sidebar itself is the scroll container, so results flow with
+     the column instead of trapping their own scrollbar. */
+  .results {
+    flex: 0 0 auto;
+    overflow: visible;
+    padding-bottom: 22px;
   }
 
   /* Map view: hide the list overlay to reveal the map underneath. */
@@ -1581,12 +1697,13 @@
 
   .mobile-nav {
     display: flex;
+    align-items: center;
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
-    height: calc(58px + env(safe-area-inset-bottom));
-    padding-bottom: env(safe-area-inset-bottom);
+    height: calc(64px + env(safe-area-inset-bottom));
+    padding: 9px 14px calc(9px + env(safe-area-inset-bottom));
     background: var(--glass-3);
     -webkit-backdrop-filter: var(--glass-blur);
     backdrop-filter: var(--glass-blur);

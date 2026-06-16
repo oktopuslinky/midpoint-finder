@@ -13,7 +13,7 @@ import { PlaceDetailsModal } from './components/PlaceDetailsModal';
 import { Icon, type IconName } from './components/Icon';
 import { useNearbyPlaces } from './hooks/useNearbyPlaces';
 import { CATEGORIES, geographicMidpoint } from './lib/geo';
-import type { PlaceResult, UserLocation } from './types';
+import type { LatLng, PlaceResult, UserLocation } from './types';
 import './App.css';
 
 const API_KEY = import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined;
@@ -25,6 +25,17 @@ const DEFAULT_RADIUS_KM = 5;
 
 type MobileView = 'list' | 'map';
 
+/**
+ * A committed search. The editable form is snapshotted into this when the user
+ * presses "Find places"; only this drives the results. Editing the form
+ * afterwards changes nothing until they search again.
+ */
+interface SearchQuery {
+  midpoint: LatLng;
+  placeType: string;
+  radiusKm: number;
+}
+
 /** Inner app — must live under APIProvider so map hooks work. */
 function Finder() {
   const [locationA, setLocationA] = useState<UserLocation | null>(null);
@@ -34,8 +45,12 @@ function Finder() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [detailsPlace, setDetailsPlace] = useState<PlaceResult | null>(null);
   const [panelOpen, setPanelOpen] = useState(true);
-  const [wasReady, setWasReady] = useState(false);
   const [mobileView, setMobileView] = useState<MobileView>('list');
+
+  // The committed search. Results load only for what the user has explicitly
+  // searched — editing the form below does nothing until they press the search
+  // button, which snapshots the current locations/category/radius into here.
+  const [query, setQuery] = useState<SearchQuery | null>(null);
 
   // Collapsible sections state
   const [sectionOpen, setSectionOpen] = useState({
@@ -53,19 +68,24 @@ function Finder() {
   }, [locationA, locationB]);
 
   const { places, loading, loadingMore, hasMore, loadMore, error } =
-    useNearbyPlaces(midpoint, category.placeType, radiusKm * 1000);
+    useNearbyPlaces(
+      query?.midpoint ?? null,
+      query?.placeType ?? '',
+      (query?.radiusKm ?? DEFAULT_RADIUS_KM) * 1000,
+    );
 
-  const ready = Boolean(midpoint);
-
-  // Collapse the search panel automatically once both locations resolve, so the
-  // results have room. Done during render via the "previous value" pattern
-  // (https://react.dev/learn/you-might-not-need-an-effect) rather than an
-  // effect, so it stays a single render with no cascading update. The user can
-  // reopen the panel from its header at any time.
-  if (ready !== wasReady) {
-    setWasReady(ready);
-    if (ready) setPanelOpen(false);
-  }
+  // Both locations are resolved, so a search can run.
+  const canSearch = Boolean(midpoint);
+  // A search has been committed — the results column reflects it.
+  const hasSearched = query !== null;
+  // The editable form has drifted from the committed search, so pressing the
+  // button would change the results.
+  const dirty =
+    !query ||
+    query.midpoint.lat !== midpoint?.lat ||
+    query.midpoint.lng !== midpoint?.lng ||
+    query.placeType !== category.placeType ||
+    query.radiusKm !== radiusKm;
 
   // Stable callbacks so LocationInput's effect doesn't re-bind each render.
   const handleSelectA = useCallback((loc: UserLocation | null) => {
@@ -76,6 +96,16 @@ function Finder() {
     setLocationB(loc);
     setSelectedId(null);
   }, []);
+
+  // Commit the current form as the active search. Collapsing the panel gives
+  // the results room, and on mobile we drop the user onto the list.
+  const handleSearch = useCallback(() => {
+    if (!midpoint) return;
+    setQuery({ midpoint, placeType: category.placeType, radiusKm });
+    setSelectedId(null);
+    setPanelOpen(false);
+    setMobileView('list');
+  }, [midpoint, category.placeType, radiusKm]);
 
   // Opening a card's details also highlights it on the map underneath, but
   // doesn't switch mobile views — the modal covers the screen anyway.
@@ -110,7 +140,7 @@ function Finder() {
             <span className="panel-toggle-label">
               {panelOpen ? 'Search settings' : 'Edit search'}
             </span>
-            {!panelOpen && ready && (
+            {!panelOpen && hasSearched && (
               <span className="panel-toggle-summary">
                 <Icon name={category.id as IconName} size={14} />{' '}
                 {category.label} · {radiusKm} km
@@ -123,7 +153,7 @@ function Finder() {
             />
           </button>
 
-          {!panelOpen && ready && (
+          {!panelOpen && hasSearched && (
             <div
               className="panel-summary"
               role="button"
@@ -268,6 +298,35 @@ function Finder() {
               </CollapsibleSection>
             </div>
           )}
+
+          {panelOpen && (
+            <div className="panel-actions">
+              <button
+                type="button"
+                className={
+                  hasSearched && !dirty
+                    ? 'search-btn search-btn--ghost'
+                    : 'search-btn'
+                }
+                disabled={!canSearch}
+                onClick={handleSearch}
+              >
+                <Icon name="search" size={17} />
+                <span>
+                  {!hasSearched
+                    ? 'Find places'
+                    : dirty
+                      ? 'Update results'
+                      : 'Search again'}
+                </span>
+              </button>
+              {!canSearch && (
+                <p className="panel-actions-hint">
+                  Add two locations to search.
+                </p>
+              )}
+            </div>
+          )}
         </section>
 
         <section className="results">
@@ -275,7 +334,7 @@ function Finder() {
             places={places}
             loading={loading}
             error={error}
-            ready={ready}
+            ready={hasSearched}
             midpoint={midpoint}
             selectedId={selectedId}
             onOpenDetails={handleOpenDetails}
@@ -300,27 +359,38 @@ function Finder() {
       </main>
 
       <nav className="mobile-nav" aria-label="View switcher">
-        <button
-          type="button"
-          className={mobileView === 'list' ? 'mobile-tab mobile-tab--active' : 'mobile-tab'}
-          aria-pressed={mobileView === 'list'}
-          onClick={() => setMobileView('list')}
-        >
-          <Icon name="list" size={20} />
-          <span>List</span>
-          {ready && places.length > 0 && (
-            <span className="mobile-count">{places.length}</span>
-          )}
-        </button>
-        <button
-          type="button"
-          className={mobileView === 'map' ? 'mobile-tab mobile-tab--active' : 'mobile-tab'}
-          aria-pressed={mobileView === 'map'}
-          onClick={() => setMobileView('map')}
-        >
-          <Icon name="map" size={20} />
-          <span>Map</span>
-        </button>
+        <div className="mobile-switch" data-active={mobileView}>
+          <span className="mobile-switch-thumb" aria-hidden="true" />
+          <button
+            type="button"
+            className={
+              mobileView === 'list'
+                ? 'mobile-tab mobile-tab--active'
+                : 'mobile-tab'
+            }
+            aria-pressed={mobileView === 'list'}
+            onClick={() => setMobileView('list')}
+          >
+            <Icon name="list" size={19} />
+            <span>List</span>
+            {hasSearched && places.length > 0 && (
+              <span className="mobile-count">{places.length}</span>
+            )}
+          </button>
+          <button
+            type="button"
+            className={
+              mobileView === 'map'
+                ? 'mobile-tab mobile-tab--active'
+                : 'mobile-tab'
+            }
+            aria-pressed={mobileView === 'map'}
+            onClick={() => setMobileView('map')}
+          >
+            <Icon name="map" size={19} />
+            <span>Map</span>
+          </button>
+        </div>
       </nav>
 
       {detailsPlace && (

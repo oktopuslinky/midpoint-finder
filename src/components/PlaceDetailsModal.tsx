@@ -116,13 +116,25 @@ const REVIEWS_INITIAL = 3;
 export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
   const { details, loading, error } = usePlaceDetails(place.id);
   const [showAllReviews, setShowAllReviews] = useState(false);
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
   const { cardStyle } = useSwipeToDismiss(cardRef, onClose);
+
+  // Mirror the lightbox open-state in a ref so the Escape handler can read it
+  // without re-binding the listener (and without side effects in a setter).
+  const lightboxRef = useRef<string | null>(null);
+  lightboxRef.current = lightboxUrl;
 
   // Close on Escape and lock background scroll while open.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') onClose();
+      if (e.key !== 'Escape') return;
+      // Escape backs out of the image lightbox first, then the modal.
+      if (lightboxRef.current) {
+        setLightboxUrl(null);
+      } else {
+        onClose();
+      }
     };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
@@ -152,6 +164,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
   const hiddenCount = allReviews.length - REVIEWS_INITIAL;
 
   return (
+    <>
     <div
       className="modal-backdrop"
       role="dialog"
@@ -180,7 +193,13 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
           <div className="modal-hero">
             <div className="modal-gallery">
               {photos.map((url, i) => (
-                <img key={i} src={url} alt="" loading="lazy" />
+                <img
+                  key={i}
+                  src={url}
+                  alt=""
+                  loading="lazy"
+                  onClick={() => setLightboxUrl(url)}
+                />
               ))}
             </div>
           </div>
@@ -304,13 +323,15 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
                   </li>
                 ))}
               </ul>
-              {!showAllReviews && hiddenCount > 0 && (
+              {hiddenCount > 0 && (
                 <button
                   type="button"
                   className="modal-show-more-reviews"
-                  onClick={() => setShowAllReviews(true)}
+                  onClick={() => setShowAllReviews((v) => !v)}
                 >
-                  Show {hiddenCount} more {hiddenCount === 1 ? 'review' : 'reviews'}
+                  {showAllReviews
+                    ? 'Show fewer reviews'
+                    : `Show ${hiddenCount} more ${hiddenCount === 1 ? 'review' : 'reviews'}`}
                 </button>
               )}
             </section>
@@ -318,5 +339,31 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
         </div>
       </div>
     </div>
+
+    {lightboxUrl && (
+      <div
+        className="lightbox-backdrop"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Photo"
+        onClick={() => setLightboxUrl(null)}
+      >
+        <button
+          type="button"
+          className="lightbox-close"
+          aria-label="Close photo"
+          onClick={() => setLightboxUrl(null)}
+        >
+          ✕
+        </button>
+        <img
+          className="lightbox-img"
+          src={lightboxUrl}
+          alt=""
+          onClick={(e) => e.stopPropagation()}
+        />
+      </div>
+    )}
+    </>
   );
 }

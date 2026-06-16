@@ -224,6 +224,9 @@ function Finder() {
               >
                 <div className="controls">
                   <div className="radius">
+                    <div className="radius-value">
+                      <strong>{radiusKm}</strong> km
+                    </div>
                     <input
                       type="range"
                       min={1}
@@ -232,6 +235,10 @@ function Finder() {
                       onChange={(e) => setRadiusKm(Number(e.target.value))}
                       aria-label="Search radius in kilometres"
                     />
+                    <div className="radius-scale">
+                      <span>1 km</span>
+                      <span>50 km</span>
+                    </div>
                   </div>
                 </div>
               </CollapsibleSection>

@@ -259,6 +259,31 @@
   accent-color: var(--accent-a);
 }
 
+/* Live read-out of the current radius, shown while the slider is open so the
+   user can see the exact value as they drag. */
+.radius-value {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  margin-bottom: 8px;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.radius-value strong {
+  color: var(--accent-a);
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.radius-scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-dim);
+}
+
 /* ---------- Collapsible search panel ---------- */
 .search-panel {
   border-bottom: 1px solid var(--border);
@@ -414,10 +439,13 @@
   gap: 12px;
   width: 100%;
   text-align: left;
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
   padding: 10px;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
   transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
 }
 
@@ -428,7 +456,7 @@
 
 .place-card--active {
   border-color: var(--accent-a);
-  box-shadow: 0 0 0 2px var(--ring);
+  box-shadow: 0 0 0 2px var(--ring), var(--glass-shadow);
 }
 
 .place-thumb {
@@ -579,10 +607,11 @@
 }
 
 .info-window {
-  color: #111;
+  color: var(--text);
   font-size: 13px;
   max-width: 240px;
   min-width: 160px;
+  padding: 4px 6px 2px;
 }
 
 .info-window-header {
@@ -597,7 +626,7 @@
   font-size: 14px;
   font-weight: 700;
   line-height: 1.3;
-  color: #111;
+  color: var(--text);
   flex: 1;
   min-width: 0;
 }
@@ -605,8 +634,43 @@
 .info-window-address {
   margin-top: 4px;
   font-size: 12px;
-  color: #555;
+  color: var(--text-dim);
   line-height: 1.4;
+}
+
+/* ---------- Dark-glass override for the Google InfoWindow chrome ----------
+   Google renders the InfoWindow bubble, its connecting tail, and the close
+   button with hard-coded white. These selectors recolour that chrome so the
+   marker "tag" matches the app's frosted-glass look. */
+.gm-style .gm-style-iw-c {
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: 14px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  padding: 8px 10px;
+}
+
+.gm-style .gm-style-iw-d {
+  background: transparent;
+  overflow: hidden !important;
+}
+
+/* The little triangle that points at the marker. */
+.gm-style .gm-style-iw-tc::after,
+.gm-style .gm-style-iw-t::after {
+  background: var(--glass-bg-strong);
+  box-shadow: -2px 2px 2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Close (✕) button: its glyph is a mask image — tint it to a light grey. */
+.gm-style .gm-style-iw-c button.gm-ui-hover-effect > span {
+  background-color: var(--text-dim) !important;
+}
+
+.gm-style .gm-style-iw-c button.gm-ui-hover-effect:hover > span {
+  background-color: var(--text) !important;
 }
 
 .info-window-info-btn {
@@ -731,6 +795,24 @@
   }
 }
 
+/* Indent the Locations / Category / Search radius blocks so they read as
+   sub-settings nested under the "Search settings" panel header. A faint
+   vertical rail on the left reinforces the hierarchy. */
+.panel-body {
+  margin-left: 20px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border);
+}
+
+.panel-body .section-header {
+  padding-left: 12px;
+}
+
+.panel-body .inputs,
+.panel-body .controls {
+  padding-left: 12px;
+}
+
 /* ---------- Collapsible sections ---------- */
 .section {
   border-top: 1px solid var(--border);
@@ -838,10 +920,13 @@
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface-2);
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
   color: var(--text);
-  border-radius: 12px;
+  border-radius: 14px;
+  box-shadow: var(--glass-shadow), var(--glass-highlight);
   font-size: 14px;
   font-weight: 600;
   transition: border-color 0.15s, background 0.15s, color 0.15s;
@@ -957,6 +1042,7 @@
   min-width: 100%;
   object-fit: cover;
   scroll-snap-align: start;
+  cursor: zoom-in;
 }
 
 .modal-gallery::-webkit-scrollbar {
@@ -1183,6 +1269,45 @@
   font-size: 14px;
   line-height: 1.5;
   color: var(--text);
+}
+
+/* ---------- Image lightbox ---------- */
+.lightbox-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(5, 6, 10, 0.9);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  animation: modal-fade 0.18s ease;
+  cursor: zoom-out;
+}
+
+.lightbox-img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 12px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-border);
+  background: var(--glass-bg-strong);
+  -webkit-backdrop-filter: var(--glass-blur);
+  backdrop-filter: var(--glass-blur);
+  color: #fff;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
 }
 
 /* ---------- Modal drag handle (mobile swipe-to-dismiss indicator) ---------- */

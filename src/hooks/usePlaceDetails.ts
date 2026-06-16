@@ -106,7 +106,7 @@ export function usePlaceDetails(placeId: string | null): UsePlaceDetailsResult {
             relativeTime: r.relative_time_description,
           })),
           photoUrls: (result.photos ?? [])
-            .slice(0, 6)
+            .slice(0, 10)
             .map((p) => p.getUrl({ maxWidth: 800, maxHeight: 500 })),
           types: result.types ?? [],
         });

@@ -10,6 +10,15 @@
   --accent-grad: linear-gradient(135deg, #6366f1, #ec4899);
   --ring: rgba(99, 102, 241, 0.45);
 
+  /* iOS-style dark "frosted glass" surfaces: translucent fill + blur, a thin
+     light hairline border, and a subtle inner top highlight. */
+  --glass-bg: rgba(33, 38, 52, 0.55);
+  --glass-bg-strong: rgba(23, 26, 35, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 6px 22px rgba(0, 0, 0, 0.35);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  --glass-blur: blur(18px) saturate(170%);
+
   font-family: 'Inter', system-ui, 'Segoe UI', Roboto, sans-serif;
   color: var(--text);
   background: var(--bg);

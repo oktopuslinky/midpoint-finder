@@ -7,6 +7,7 @@ import {
   useMap,
 } from '@vis.gl/react-google-maps';
 import type { LatLng, PlaceResult, UserLocation } from '../types';
+import { Icon } from './Icon';
 
 interface MapViewProps {
   mapId: string;
@@ -94,7 +95,7 @@ export function MapView({
       {midpoint && (
         <AdvancedMarker position={midpoint} title="Midpoint">
           <div className="midpoint-marker" aria-label="Midpoint">
-            ⭐
+            <Icon name="star" filled size={18} />
           </div>
         </AdvancedMarker>
       )}
@@ -134,7 +135,7 @@ export function MapView({
                   onOpenDetails(selected);
                 }}
               >
-                ℹ
+                <Icon name="info" size={15} />
               </button>
             </div>
             {selected.address && (

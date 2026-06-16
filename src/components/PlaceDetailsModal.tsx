@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import type { PlaceResult } from '../types';
+import { Icon } from './Icon';
 
 interface PlaceDetailsModalProps {
   place: PlaceResult;
@@ -26,8 +27,15 @@ function Stars({ rating }: { rating: number }) {
   const rounded = Math.round(rating);
   return (
     <span className="stars" aria-label={`${rating.toFixed(1)} out of 5`}>
-      {'★'.repeat(rounded)}
-      <span className="stars-empty">{'★'.repeat(5 - rounded)}</span>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <Icon
+          key={n}
+          name="star"
+          size={14}
+          filled={n <= rounded}
+          className={n <= rounded ? undefined : 'stars-empty'}
+        />
+      ))}
     </span>
   );
 }
@@ -186,7 +194,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
           aria-label="Close"
           onClick={onClose}
         >
-          ✕
+          <Icon name="close" size={17} />
         </button>
 
         {photos.length > 0 && (
@@ -239,7 +247,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
               target="_blank"
               rel="noreferrer"
             >
-              <span aria-hidden>🗺️</span> Google Maps
+              <Icon name="map" size={16} /> Google Maps
             </a>
             <a
               className="modal-action"
@@ -247,7 +255,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
               target="_blank"
               rel="noreferrer"
             >
-              <span aria-hidden>📍</span> Apple Maps
+              <Icon name="navigate" size={16} /> Apple Maps
             </a>
             {details?.website && (
               <a
@@ -256,12 +264,12 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
                 target="_blank"
                 rel="noreferrer"
               >
-                <span aria-hidden>🌐</span> Website
+                <Icon name="globe" size={16} /> Website
               </a>
             )}
             {details?.phone && (
               <a className="modal-action" href={`tel:${details.phone}`}>
-                <span aria-hidden>📞</span> Call
+                <Icon name="phone" size={16} /> Call
               </a>
             )}
           </div>
@@ -354,7 +362,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
           aria-label="Close photo"
           onClick={() => setLightboxUrl(null)}
         >
-          ✕
+          <Icon name="close" size={18} />
         </button>
         <img
           className="lightbox-img"

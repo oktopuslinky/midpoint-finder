@@ -51,14 +51,14 @@ export function formatDistance(meters: number): string {
  * Google Places nearby-search supported type.
  */
 export const CATEGORIES: Category[] = [
-  { id: 'restaurant', label: 'Restaurants', icon: '🍽️', placeType: 'restaurant' },
-  { id: 'cafe', label: 'Cafés', icon: '☕', placeType: 'cafe' },
-  { id: 'bar', label: 'Bars', icon: '🍸', placeType: 'bar' },
-  { id: 'park', label: 'Parks', icon: '🌳', placeType: 'park' },
-  { id: 'museum', label: 'Museums', icon: '🏛️', placeType: 'museum' },
-  { id: 'movie_theater', label: 'Cinemas', icon: '🎬', placeType: 'movie_theater' },
-  { id: 'shopping_mall', label: 'Shopping', icon: '🛍️', placeType: 'shopping_mall' },
-  { id: 'tourist_attraction', label: 'Attractions', icon: '📸', placeType: 'tourist_attraction' },
-  { id: 'night_club', label: 'Nightlife', icon: '🎶', placeType: 'night_club' },
-  { id: 'gym', label: 'Gyms', icon: '💪', placeType: 'gym' },
+  { id: 'restaurant', label: 'Restaurants', placeType: 'restaurant' },
+  { id: 'cafe', label: 'Cafés', placeType: 'cafe' },
+  { id: 'bar', label: 'Bars', placeType: 'bar' },
+  { id: 'park', label: 'Parks', placeType: 'park' },
+  { id: 'museum', label: 'Museums', placeType: 'museum' },
+  { id: 'movie_theater', label: 'Cinemas', placeType: 'movie_theater' },
+  { id: 'shopping_mall', label: 'Shopping', placeType: 'shopping_mall' },
+  { id: 'tourist_attraction', label: 'Attractions', placeType: 'tourist_attraction' },
+  { id: 'night_club', label: 'Nightlife', placeType: 'night_club' },
+  { id: 'gym', label: 'Gyms', placeType: 'gym' },
 ];

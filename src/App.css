@@ -406,16 +406,15 @@
   animation: spin 0.7s linear infinite;
 }
 
+/* Compact icon-only "locate me" button — the crosshair glyph is the universal
+   map symbol for current location, so no label is needed. */
 .location-current {
-  gap: 7px;
-  background: rgba(255, 255, 255, 0.06);
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: rgba(129, 140, 248, 0.12);
   border: 1px solid var(--glass-border);
-  color: var(--text);
-  border-radius: 999px;
-  padding: 7px 11px;
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap;
+  color: var(--accent-a-bright);
 }
 
 .location-current:hover:not(:disabled) {
@@ -425,23 +424,13 @@
   transform: translateY(-1px);
 }
 
+.location-current:active:not(:disabled) {
+  transform: scale(0.94);
+}
+
 .location-current:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-}
-
-.location-current svg {
-  flex-shrink: 0;
-}
-
-.location-current-text {
-  display: none;
-}
-
-@media (min-width: 480px) {
-  .location-current-text {
-    display: inline;
-  }
 }
 
 .inputs-divider {

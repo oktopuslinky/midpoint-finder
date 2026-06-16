@@ -122,11 +122,11 @@ export function LocationInput({
           type="button"
           className="location-current"
           aria-label="Use my current location"
+          title="Use my current location"
           onClick={handleCurrentLocation}
           disabled={gettingLocation}
         >
           <Icon name="locate" size={18} />
-          <span className="location-current-text">My Location</span>
         </button>
       )}
     </div>

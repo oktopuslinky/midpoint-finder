@@ -1,64 +1,83 @@
 :root {
-  /* ---------- Base palette (deep, slightly-blue "space" black) ---------- */
-  --bg: #07090f;
-  --bg-2: #0b0e17;
+  /* ============================================================
+     Meet in the Middle — "Editorial Atlas"
+     A premium, printed-city-guide aesthetic: warm paper, ink type,
+     and a two-tone identity that encodes the product's job —
+     Person A (coral, warm) and Person B (teal, cool) meeting at a
+     brass midpoint. Hairline rules and restraint do the work; the
+     convergence line is the one signature flourish.
+     ============================================================ */
 
-  /* Solid fallbacks used when backdrop-filter is unavailable. */
-  --surface: #11131c;
-  --surface-2: #181b27;
-  --border: rgba(255, 255, 255, 0.09);
-  --border-strong: rgba(255, 255, 255, 0.16);
+  /* ---------- Paper & ink ---------- */
+  --paper: #f3ede1; /* warm paper canvas */
+  --paper-raised: #faf7f0; /* cards / raised surfaces */
+  --paper-sunk: #eae1d1; /* inset wells, slider tracks */
+  --cream: #fcf9f3;
 
-  --text: #f2f4f9;
-  --text-dim: #a6adbe;
-  --text-faint: #717892;
+  --ink: #221c14; /* primary text — warm near-black */
+  --ink-2: #5f5544; /* secondary text */
+  --ink-3: #8c8170; /* faint / captions (large text only) */
 
-  /* ---------- Brand accents (A = indigo, B = pink) ---------- */
-  --accent-a: #6366f1;
-  --accent-a-bright: #a5b4fc;
-  --accent-b: #ec4899;
-  --accent-b-bright: #f9a8d4;
-  --accent-grad: linear-gradient(135deg, #6366f1 0%, #8b5cf6 48%, #ec4899 100%);
-  --ring: rgba(129, 140, 248, 0.55);
+  --line: rgba(34, 28, 20, 0.12); /* warm hairline */
+  --line-strong: rgba(34, 28, 20, 0.22);
 
-  /* ---------- Liquid Glass material ----------
-     Dark "Liquid Glass": a translucent tinted fill, a heavy background blur
-     with boosted saturation (so colour from the aurora behind bleeds through),
-     a bright hairline edge, a soft top specular highlight, and depth shadow.
-     Three elevation tiers keep a clear hierarchy: base panels → cards →
-     floating popovers/modals. */
-  --glass-1: rgba(20, 24, 37, 0.55); /* sidebar / large surfaces */
-  --glass-2: rgba(33, 38, 56, 0.5); /* cards, inputs, chips */
-  --glass-3: rgba(16, 19, 30, 0.72); /* modals, popovers, floating bars */
-  --glass-hover: rgba(46, 52, 74, 0.62);
+  /* ---------- Duotone identity (A = coral, B = teal) ---------- */
+  --coral: #dd4b2a; /* Person A / primary accent */
+  --coral-deep: #b23a1d; /* accessible text/links, hover */
+  --coral-tint: #f7e2d7; /* soft fills */
 
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --teal: #0e7c86; /* Person B / secondary accent */
+  --teal-deep: #0a5d65;
+  --teal-tint: #d6e9ea;
 
-  /* Specular highlight (top edge) + fine inner edge to fake refraction. */
-  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.14),
-    inset 0 0 0 1px rgba(255, 255, 255, 0.04);
-  --glass-shadow: 0 10px 34px rgba(0, 0, 0, 0.5);
-  --glass-shadow-lg: 0 24px 64px rgba(0, 0, 0, 0.6);
+  --gold: #bd8729; /* the midpoint — brass / stars */
+  --gold-deep: #98691b;
+  --gold-tint: #f1e6cf;
 
-  --glass-blur: blur(22px) saturate(180%);
-  --glass-blur-sm: blur(14px) saturate(160%);
+  /* The signature "meeting" gradient: A → midpoint → B. */
+  --grad-meet: linear-gradient(
+    90deg,
+    var(--coral) 0%,
+    var(--gold) 50%,
+    var(--teal) 100%
+  );
 
-  --radius-sm: 10px;
-  --radius-md: 14px;
+  /* ---------- Semantic ---------- */
+  --open: #2f7d52; /* open now */
+  --closed: var(--ink-2); /* closed — calm, not alarmist */
+  --danger: #b23a1d;
+  --ring: rgba(221, 75, 42, 0.5); /* focus ring (coral) */
+
+  /* ---------- Elevation (light theme: hairlines first, soft shadow) -- */
+  --shadow-sm: 0 1px 2px rgba(34, 28, 20, 0.05);
+  --shadow-md: 0 10px 24px -14px rgba(34, 28, 20, 0.32);
+  --shadow-lg: 0 28px 60px -26px rgba(34, 28, 20, 0.4);
+
+  /* ---------- Radii ---------- */
+  --radius-sm: 9px;
+  --radius-md: 13px;
   --radius-lg: 18px;
   --radius-xl: 24px;
 
+  /* ---------- Type ---------- */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, 'Times New Roman',
+    serif;
+  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Space Mono', ui-monospace, 'SF Mono', 'Cascadia Mono',
+    monospace;
+
+  /* ---------- Motion ---------- */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--text);
-  background: var(--bg);
+  font-family: var(--font-sans);
+  color: var(--ink);
+  background: var(--paper);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
+  color-scheme: light;
 }
 
 * {
@@ -72,34 +91,28 @@ body,
   margin: 0;
 }
 
-/* ---------- Ambient aurora backdrop ----------
-   Soft colour wells sit behind every glass surface so the blur has real
-   content to refract. Fixed to the viewport; the opaque map simply paints
-   over it on the right. */
+/* ---------- Paper backdrop ----------
+   The two brand hues sit at opposite corners at a whisper of opacity —
+   an ambient echo of "two sides" — over warm paper. Fixed so it stays
+   put behind scrolling content; the opaque map simply paints over it. */
 body {
-  background-color: var(--bg);
+  background-color: var(--paper);
   background-image:
     radial-gradient(
-      42rem 42rem at 8% -8%,
-      rgba(99, 102, 241, 0.28),
+      52rem 52rem at 4% -6%,
+      rgba(221, 75, 42, 0.1),
       transparent 60%
     ),
     radial-gradient(
-      38rem 38rem at 96% 6%,
-      rgba(236, 72, 153, 0.22),
-      transparent 60%
+      48rem 48rem at 98% 8%,
+      rgba(14, 124, 134, 0.09),
+      transparent 58%
     ),
     radial-gradient(
-      46rem 46rem at 30% 112%,
-      rgba(139, 92, 246, 0.2),
+      40rem 40rem at 60% 114%,
+      rgba(189, 135, 41, 0.08),
       transparent 60%
-    ),
-    radial-gradient(
-      30rem 30rem at 80% 80%,
-      rgba(34, 211, 238, 0.12),
-      transparent 60%
-    ),
-    linear-gradient(160deg, var(--bg-2), var(--bg));
+    );
   background-attachment: fixed;
   background-repeat: no-repeat;
 }
@@ -113,16 +126,25 @@ a {
   color: inherit;
 }
 
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-optical-sizing: auto;
+  font-weight: 560;
+  letter-spacing: -0.015em;
+}
+
 /* ---------- Global focus ring (keyboard users only) ---------- */
 :focus-visible {
-  outline: 2px solid var(--accent-a-bright);
+  outline: 2px solid var(--coral);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 ::selection {
-  background: rgba(139, 92, 246, 0.4);
-  color: #fff;
+  background: var(--gold-tint);
+  color: var(--ink);
 }
 
 @media (prefers-reduced-motion: reduce) {

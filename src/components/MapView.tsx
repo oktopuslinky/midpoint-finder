@@ -78,7 +78,7 @@ export function MapView({
 
       {locationA && (
         <AdvancedMarker position={locationA.location} title={locationA.address}>
-          <Pin background="#6366f1" borderColor="#4338ca" glyphColor="#fff">
+          <Pin background="#dd4b2a" borderColor="#b23a1d" glyphColor="#fff">
             A
           </Pin>
         </AdvancedMarker>
@@ -86,7 +86,7 @@ export function MapView({
 
       {locationB && (
         <AdvancedMarker position={locationB.location} title={locationB.address}>
-          <Pin background="#ec4899" borderColor="#be185d" glyphColor="#fff">
+          <Pin background="#0e7c86" borderColor="#0a5d65" glyphColor="#fff">
             B
           </Pin>
         </AdvancedMarker>

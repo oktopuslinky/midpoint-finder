@@ -7,11 +7,7 @@ import { ConvergenceLine } from './ConvergenceLine';
 import { Icon, type IconName } from './Icon';
 import { useFinder } from '../state/FinderContext';
 import { useHashRoute } from '../hooks/useHashRoute';
-import { CATEGORIES } from '../lib/geo';
-
-const MAP_ID =
-  (import.meta.env.VITE_GOOGLE_MAPS_MAP_ID as string | undefined) ||
-  'DEMO_MAP_ID';
+import { CATEGORIES, distanceMeters, formatDistance } from '../lib/geo';
 
 /** The finder workspace: search panel + results rail beside a live map. */
 export function Finder() {
@@ -309,15 +305,39 @@ export function Finder() {
 
       <main className="map-wrap">
         <MapView
-          mapId={MAP_ID}
           locationA={locationA}
           locationB={locationB}
           midpoint={midpoint}
+          radiusKm={radiusKm}
           places={places}
           selectedId={selectedId}
           onSelectPlace={setSelectedId}
           onOpenDetails={openDetails}
         />
+        {midpoint && locationA && locationB && (
+          <div
+            className="map-insights"
+            aria-label={`Each person travels about ${formatDistance(
+              distanceMeters(locationA.location, midpoint),
+            )}; the two locations are ${formatDistance(
+              distanceMeters(locationA.location, locationB.location),
+            )} apart.`}
+          >
+            <span className="map-insights-eyebrow">Even split</span>
+            <span className="map-insights-figure">
+              {formatDistance(distanceMeters(locationA.location, midpoint))}
+              <span> each way</span>
+            </span>
+            <span className="map-insights-gap" aria-hidden="true">
+              <span className="mi-dot mi-dot--a" />
+              {formatDistance(
+                distanceMeters(locationA.location, locationB.location),
+              )}{' '}
+              apart
+              <span className="mi-dot mi-dot--b" />
+            </span>
+          </div>
+        )}
       </main>
 
       <nav className="mobile-nav" aria-label="View switcher">

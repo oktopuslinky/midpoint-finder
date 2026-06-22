@@ -4,6 +4,7 @@ import {
   Building2,
   Camera,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   ChevronUp,
   Clapperboard,
@@ -57,6 +58,7 @@ const REGISTRY = {
 
   // Interface
   brand: Waypoints,
+  chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   chevronDown: ChevronDown,
   chevronUp: ChevronUp,

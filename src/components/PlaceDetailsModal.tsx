@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlaceDetails } from '../hooks/usePlaceDetails';
 import type { PlaceResult } from '../types';
 import { Icon } from './Icon';
@@ -43,6 +43,7 @@ function Stars({ rating }: { rating: number }) {
 /** Tracks a downward touch drag on the card and calls onDismiss when threshold is met. */
 function useSwipeToDismiss(
   cardRef: React.RefObject<HTMLDivElement | null>,
+  scrollRef: React.RefObject<HTMLDivElement | null>,
   onDismiss: () => void,
 ) {
   const [dragY, setDragY] = useState(0);
@@ -57,10 +58,13 @@ function useSwipeToDismiss(
     const card = cardRef.current;
     if (!card) return;
 
+    // The body — not the card — is the scroll container, so only start a
+    // dismiss drag when that inner region is scrolled to the very top.
+    const scrollTop = () => scrollRef.current?.scrollTop ?? 0;
     const s = { startY: 0, startTime: 0, started: false, dragging: false, lastY: 0 };
 
     const onTouchStart = (e: TouchEvent) => {
-      if (card.scrollTop > 4) return;
+      if (scrollTop() > 4) return;
       s.startY = e.touches[0].clientY;
       s.startTime = Date.now();
       s.started = true;
@@ -70,7 +74,7 @@ function useSwipeToDismiss(
 
     const onTouchMove = (e: TouchEvent) => {
       if (!s.started) return;
-      if (card.scrollTop > 4) { s.started = false; return; }
+      if (scrollTop() > 4) { s.started = false; return; }
       const delta = e.touches[0].clientY - s.startY;
       if (delta > 0) {
         s.dragging = true;
@@ -102,7 +106,7 @@ function useSwipeToDismiss(
       card.removeEventListener('touchmove', onTouchMove);
       card.removeEventListener('touchend', onTouchEnd);
     };
-  }, [cardRef]);
+  }, [cardRef, scrollRef]);
 
   const cardStyle: React.CSSProperties = isDismissing
     ? { transform: 'translateY(120%)', transition: 'transform 0.22s cubic-bezier(0.4, 0, 1, 1)' }
@@ -126,7 +130,26 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
   const [showAllReviews, setShowAllReviews] = useState(false);
   const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const { cardStyle } = useSwipeToDismiss(cardRef, onClose);
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const galleryRef = useRef<HTMLDivElement>(null);
+  // Whether the photo strip is pinned to its first / last frame, so the
+  // matching arrow can fade out when there's nothing more in that direction.
+  const [galleryEdges, setGalleryEdges] = useState({ atStart: true, atEnd: false });
+  const { cardStyle } = useSwipeToDismiss(cardRef, scrollRef, onClose);
+
+  const updateGalleryEdges = useCallback(() => {
+    const el = galleryRef.current;
+    if (!el) return;
+    const atStart = el.scrollLeft <= 8;
+    const atEnd = el.scrollLeft >= el.scrollWidth - el.clientWidth - 8;
+    setGalleryEdges({ atStart, atEnd });
+  }, []);
+
+  const scrollGallery = (dir: -1 | 1) => {
+    const el = galleryRef.current;
+    if (!el) return;
+    el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
+  };
 
   // Mirror the lightbox open-state in a ref so the Escape handler can read it
   // without re-binding the listener (and without side effects in a setter).
@@ -162,6 +185,12 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
     : place.photoUrl
       ? [place.photoUrl]
       : [];
+
+  // Recompute which carousel arrows to show whenever the photo set changes
+  // (e.g. once the richer details payload swaps in its full gallery).
+  useEffect(() => {
+    updateGalleryEdges();
+  }, [photos.length, updateGalleryEdges]);
 
   const mapsUrl = googleMapsUrl(place, details?.googleMapsUrl);
   const lat = details?.location.lat ?? place.location.lat;
@@ -199,7 +228,11 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
 
         {photos.length > 0 && (
           <div className="modal-hero">
-            <div className="modal-gallery">
+            <div
+              className="modal-gallery"
+              ref={galleryRef}
+              onScroll={updateGalleryEdges}
+            >
               {photos.map((url, i) => (
                 <img
                   key={i}
@@ -210,9 +243,32 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
                 />
               ))}
             </div>
+            {photos.length > 1 && (
+              <>
+                <button
+                  type="button"
+                  className="gallery-nav gallery-nav--prev"
+                  aria-label="Previous photo"
+                  disabled={galleryEdges.atStart}
+                  onClick={() => scrollGallery(-1)}
+                >
+                  <Icon name="chevronLeft" size={20} />
+                </button>
+                <button
+                  type="button"
+                  className="gallery-nav gallery-nav--next"
+                  aria-label="Next photo"
+                  disabled={galleryEdges.atEnd}
+                  onClick={() => scrollGallery(1)}
+                >
+                  <Icon name="chevronRight" size={20} />
+                </button>
+              </>
+            )}
           </div>
         )}
 
+        <div className="modal-scroll" ref={scrollRef}>
         <div className="modal-body">
           <h2 className="modal-title">{place.name}</h2>
 
@@ -344,6 +400,7 @@ export function PlaceDetailsModal({ place, onClose }: PlaceDetailsModalProps) {
               )}
             </section>
           )}
+        </div>
         </div>
       </div>
     </div>
